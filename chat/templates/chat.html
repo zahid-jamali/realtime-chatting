@@ -1,0 +1,72 @@
+{% include 'navbar.html'%}
+<h2>Chat Page</h2>
+
+<style>
+    .container{
+        width: 45%;
+        background-color: whitesmoke;
+        margin: auto;
+        border-radius: 10px;
+        padding: 30px;
+        height: 200px;
+        border: 1px solid black;
+        overflow-y: auto;
+    }
+    .mymsg{
+        width: 50%;
+        border: 1px solid lightblue;
+        border-radius: 10px;
+        right: 1;
+        margin-left: 30%;
+        min-height: 30px;
+        padding: 5px;
+    }
+    .othersmsg{
+        width: 50%;
+        border: 1px solid lightcoral;
+        border-radius: 10px;
+        left: 1;
+        min-height: 30px;
+        padding: 5px;
+    }
+</style>
+<h3>{{room}}</h3>
+
+<label>{{user}}</label>
+<div class="container" id="container">
+  
+
+    {% for i in data%}
+    <!-- <div class="mymsg">{{i.message}}</div> -->
+    <br>
+    <div class="othersmsg">{{i.user.name}}: {{i.message}}</div>
+    {% endfor %}
+</div>
+<center>
+        <input type="hidden" id="room" value="{{room.url}}">
+        <textarea name="message" id="msg" cols="30" rows="10"></textarea>
+        <button onclick="submit()">Submit</button>
+
+</center>
+
+<script>
+    let url=`ws://${window.location.host}/ws/socket-server/${document.getElementById('room').value}` 
+    const ws=new WebSocket(url)
+
+    function submit(){
+        let msg=document.getElementById("msg")
+        ws.send(JSON.stringify({"type": "chat", "message": msg.value}))
+        document.getElementById("msg").value=""
+    }
+
+    ws.onmessage=function(e){
+        data=JSON.parse(e.data)
+        if(data.type=="chat"){
+            let already=document.getElementById("container").innerHTML
+            document.getElementById("container").innerHTML=""
+            let New=`<br><div class="othersmsg">${data.user}: ${data.message}</div>`
+            document.getElementById("container").innerHTML = New+already
+        }
+    }
+
+</script>
